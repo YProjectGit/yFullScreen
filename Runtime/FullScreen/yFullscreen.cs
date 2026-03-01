@@ -7,8 +7,6 @@ namespace yugop.fullscreen
     /// <summary>再生中に指定キー（または F12）で Game View フルスクリーンをトグルするコンポーネント。エディタ再生時のみ有効で、ビルド版（プロジェクタ等）では動作しません。レガシー／新 Input System どちらにも対応（追加パッケージ不要）。</summary>
     public class FullScreenToggle : MonoBehaviour
     {
-        private const string ToggleInputName = "ToggleFullScreen";
-
         [SerializeField] private bool fullScreenOnPlay;
         [SerializeField] private KeyCode fullScreenKey = KeyCode.F12;
 
@@ -52,9 +50,7 @@ namespace yugop.fullscreen
             {
                 try
                 {
-                    bool down = key == KeyCode.F12
-                        ? Input.GetButtonDown(ToggleInputName)
-                        : Input.GetKeyDown(key);
+                    bool down = Input.GetKeyDown(key);
                     _useNewInputSystem = false;
                     return down;
                 }
@@ -67,9 +63,7 @@ namespace yugop.fullscreen
             if (_useNewInputSystem == true)
                 return WasKeyPressedThisFrameViaReflection(key);
 
-            return key == KeyCode.F12
-                ? Input.GetButtonDown(ToggleInputName)
-                : Input.GetKeyDown(key);
+            return Input.GetKeyDown(key);
         }
 
         /// <summary>新 Input System をリフレクションで参照し、キー押下を取得。パッケージ参照なしで新 Input のみのプロジェクトに対応。</summary>
