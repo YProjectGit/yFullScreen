@@ -8,7 +8,7 @@ namespace yugop.fullscreen
     public static class AutoImportSample
     {
         private const string PackageName = "com.yugop.yfullscreen";
-        private const string SamplePrefabName = "yFullscreen.prefab";
+        private const string SamplePrefabName = "yFullScreen.prefab";
         private const string DestRelativePath = "Samples/yFullScreen";
 
         [InitializeOnLoadMethod]
