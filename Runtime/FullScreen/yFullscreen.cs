@@ -18,6 +18,10 @@ namespace yugop.fullscreen
 
         private static bool? _useNewInputSystem;
         private static bool _wasPlaying;
+        private static int _lastToggleFrame = -1;
+        private static float _lastToggleTime;
+
+        private const float CooldownSeconds = 0.2f;
 
         private void Update()
         {
@@ -31,15 +35,26 @@ namespace yugop.fullscreen
                 {
                     _useNewInputSystem = null;
                     _wasPlaying = false;
+                    _lastToggleFrame = -1;
                 }
                 return;
             }
             _wasPlaying = true;
 
             bool triggered = IsToggleKeyPressed();
+            if (!triggered) return;
 
-            if (triggered)
-                RequestToggleFullScreen?.Invoke();
+            int frame = Time.frameCount;
+            float elapsed = Time.realtimeSinceStartup - _lastToggleTime;
+
+            if (_lastToggleFrame == frame)
+                return;
+            if (_lastToggleFrame >= 0 && elapsed < CooldownSeconds)
+                return;
+
+            _lastToggleFrame = frame;
+            _lastToggleTime = Time.realtimeSinceStartup;
+            RequestToggleFullScreen?.Invoke();
         }
 
         private bool IsToggleKeyPressed()

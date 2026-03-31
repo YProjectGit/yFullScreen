@@ -6,6 +6,27 @@ using ContainerWindow = UnityEngine.ScriptableObject;
 
 namespace yugop.fullscreen
 {
+    /// <summary>macOS + Unity 6.3 以降で ShowMode.NoShadow を使うと半透明になるバグの回避用。</summary>
+    internal static class FullscreenShowMode
+    {
+        public static int GetInitialShowMode()
+        {
+#if UNITY_EDITOR_OSX
+            if (IsUnity63OrNewer())
+                return (int)ShowMode.PopupMenu;
+#endif
+            return (int)ShowMode.NoShadow;
+        }
+
+        private static bool IsUnity63OrNewer()
+        {
+            string v = Application.unityVersion;
+            if (string.IsNullOrEmpty(v)) return false;
+            if (!v.StartsWith("6000.")) return false;
+            if (v.Length < 6) return true;
+            return string.CompareOrdinal(v, "6000.3") >= 0;
+        }
+    }
     /// <summary>Manages the fullscreen ContainerWindow and view pyramid.</summary>
     public abstract class FullscreenContainer : ScriptableObject
     {
@@ -122,16 +143,20 @@ namespace yugop.fullscreen
             var displayImmediately = true;
             var setFocus = true;
 
+            int showMode = FullscreenShowMode.GetInitialShowMode();
             if (cw.HasMethod("Show", new[] { typeof(int), typeof(bool), typeof(bool), typeof(bool), typeof(int) }))
-                cw.InvokeMethod("Show", (int)ShowMode.NoShadow, loadPosition, displayImmediately, setFocus, 0);
+                cw.InvokeMethod("Show", showMode, loadPosition, displayImmediately, setFocus, 0);
             else if (cw.HasMethod("Show", new[] { typeof(int), typeof(bool), typeof(bool) }))
-                cw.InvokeMethod("Show", (int)ShowMode.NoShadow, loadPosition, displayImmediately);
+                cw.InvokeMethod("Show", showMode, loadPosition, displayImmediately);
             else
-                cw.InvokeMethod("Show", (int)ShowMode.NoShadow, loadPosition, displayImmediately, setFocus);
+                cw.InvokeMethod("Show", showMode, loadPosition, displayImmediately, setFocus);
 
             cw.InvokeMethod("SetMinMaxSizes", rect.size, rect.size);
             cw.SetFieldValue("m_ShowMode", (int)ShowMode.PopupMenu);
             cw.SetFieldValue("m_DontSaveToLayout", true);
+
+            // macOS + PopupMenu: Show() がウィンドウ位置を調整する場合があるため再設定
+            cw.SetPropertyValue("position", rect);
 
             return new ViewPyramid { Window = childWindow, View = hv, Container = cw };
         }
@@ -150,8 +175,12 @@ namespace yugop.fullscreen
 
         protected virtual void AfterOpening()
         {
+            var targetRect = Rect;
             After.Frames(2, () =>
             {
+                // macOS: ウィンドウサーバが非同期で位置を変えてしまう場合への対策
+                if (m_dst.Container != null)
+                    Rect = targetRect;
                 UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
             });
         }
