@@ -27,6 +27,9 @@ namespace yugop.fullscreen
                 case PlayModeStateChange.EnteredPlayMode:
                     OpenFullscreenIfRequested();
                     break;
+                case PlayModeStateChange.EnteredEditMode:
+                    FullScreenToggle.ResetStaticInputState();
+                    break;
             }
         }
 

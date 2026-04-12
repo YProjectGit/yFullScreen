@@ -1,6 +1,6 @@
 {
     "name": "com.yugop.yfullscreen",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "displayName": "yFullScreen",
     "description": "Unity EditorのGame View を再生中にフルスクリーン表示するユーティリティです。\nSamplesフォルダ以下にある「yFullScreen」というPrefabを、制作中のUnityシーンにドラッグドロップすると準備完了です。\n再生中にF12キーを押すと、GameViewがフルスクリーン表示になり、もう一度押すと戻ります。\n\n\nA utility that displays the Unity Editor Game view in fullscreen during play.\nDrag and drop the \"yFullScreen\" Prefab from the Samples folder into your Unity scene and you're ready to go.\nPress F12 during play to toggle the Game view to fullscreen; press again to restore.",
     "unity": "6000.0",

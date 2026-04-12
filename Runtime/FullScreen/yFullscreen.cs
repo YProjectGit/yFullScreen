@@ -23,6 +23,23 @@ namespace yugop.fullscreen
 
         private const float CooldownSeconds = 0.2f;
 
+        /// <summary>プレイモード遷移などで静的な入力判定・クールダウン状態を破棄する。エディタのブリッジから呼ぶ。</summary>
+        public static void ResetStaticInputState()
+        {
+            _useNewInputSystem = null;
+            _wasPlaying = false;
+            _lastToggleFrame = -1;
+            _lastToggleTime = 0f;
+        }
+
+        private void OnEnable()
+        {
+            if (!Application.isEditor)
+                return;
+            if (Application.isPlaying)
+                _useNewInputSystem = null;
+        }
+
         private void Update()
         {
             // ビルド版（プロジェクタ再生含む）では何もしない。エディタの Play モードでのみ有効。
@@ -32,11 +49,7 @@ namespace yugop.fullscreen
             if (!Application.isPlaying)
             {
                 if (_wasPlaying)
-                {
-                    _useNewInputSystem = null;
-                    _wasPlaying = false;
-                    _lastToggleFrame = -1;
-                }
+                    ResetStaticInputState();
                 return;
             }
             _wasPlaying = true;
@@ -78,7 +91,15 @@ namespace yugop.fullscreen
             if (_useNewInputSystem == true)
                 return WasKeyPressedThisFrameViaReflection(key);
 
-            return Input.GetKeyDown(key);
+            try
+            {
+                return Input.GetKeyDown(key);
+            }
+            catch (InvalidOperationException)
+            {
+                _useNewInputSystem = true;
+                return WasKeyPressedThisFrameViaReflection(key);
+            }
         }
 
         /// <summary>新 Input System をリフレクションで参照し、キー押下を取得。パッケージ参照なしで新 Input のみのプロジェクトに対応。</summary>
